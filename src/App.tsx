@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import { prefecturesData } from './prefectures.js';
+import { WeatherDisplay } from './WeatherDisplay.js';
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selPrefecture, setSelPrefecture] = useState("東京都");
+
+  function handleSelectChange(e) {
+    console.log(e.target.value);
+    setSelPrefecture(e.target.value);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="weather">
+      <h1>Weather</h1>
+      <select
+        className="prefectureSelector"
+        name="prefectures"
+        value={selPrefecture}
+        onChange={handleSelectChange}
+      >
+        {prefecturesData.map(p => {
+          return (
+            <option key={p.name} value={p.name}>
+              {p.name}
+            </option>
+          )
+        })}
+      </select>
+      <WeatherDisplay prefecture={selPrefecture} />
+    </div>
+  );
 }
+
 
 export default App
