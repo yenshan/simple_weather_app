@@ -1,5 +1,10 @@
+export type Prefecture = {
+    name: string;
+    lat: number;
+    lon: number;
+};
 
-export function getPrefectureData(name) {
+export function getPrefectureData(name: string): Prefecture | undefined {
     for (let data of prefecturesData) {
         if (data.name == name) {
             return data;

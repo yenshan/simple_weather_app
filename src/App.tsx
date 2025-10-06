@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { prefecturesData } from './prefectures.js';
 import { WeatherDisplay } from './WeatherDisplay.js';
 import './App.css'
@@ -6,7 +6,7 @@ import './App.css'
 function App() {
   const [selPrefecture, setSelPrefecture] = useState("東京都");
 
-  function handleSelectChange(e) {
+  function handleSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
     console.log(e.target.value);
     setSelPrefecture(e.target.value);
   }

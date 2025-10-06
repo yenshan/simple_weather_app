@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react'
-import { getPrefectureData } from './prefectures.js';
+import type { Prefecture } from './prefectures';
+import { getPrefectureData } from './prefectures';
 import './WeatherDisplay.css'
+
+export type WebAPIParams = {
+  latitude: number | undefined,
+  longitude: number | undefined,
+  daily: Array<string>,
+  current: Array<string>,
+}
 
 const initial_weather_info = {
   weather_code: 0,
@@ -9,7 +17,7 @@ const initial_weather_info = {
   today_temperature_min: 0,
 }
 
-function getOpenMetroAPI(params) {
+function getOpenMetroAPI(params: WebAPIParams): string {
     let url = "https://api.open-meteo.com/v1/forecast?"
     url += `latitude=${params.latitude}`;
     url += `&longitude=${params.longitude}`;
@@ -18,14 +26,14 @@ function getOpenMetroAPI(params) {
     return url;
 }
 
-export function WeatherDisplay({prefecture}) {
+export function WeatherDisplay({prefecture}: {prefecture:string}) {
   const [weather, setWeather] = useState(initial_weather_info);
 
   useEffect(()=>{
-    const pinfo = getPrefectureData(prefecture);
-    const params = {
-        latitude: pinfo.lat,
-        longitude: pinfo.lon,
+    const pinfo: Prefecture | undefined = getPrefectureData(prefecture);
+    const params: WebAPIParams = {
+        latitude: pinfo?.lat,
+        longitude: pinfo?.lon,
         daily: ["temperature_2m_max", "temperature_2m_min"],
         current: ["weather_code", "temperature_2m"],
     }
@@ -76,7 +84,12 @@ export function WeatherDisplay({prefecture}) {
   )
 }
 
-const weather_conditions = {
+type WeatherCondition = {
+  description: string;
+  img: string;
+};
+
+const weather_conditions: Record<number, WeatherCondition> = {
   0: { description: "Clear sky", img: "01_0_clear_sky" },
   1: { description: "Mainly clear", img: "02_1_2_3_cloud_variants" },
   2: { description: "Partly cloudy", img: "03_cloud" },
