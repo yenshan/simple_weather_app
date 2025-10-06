@@ -1,13 +1,14 @@
 .weather {
     display: flex;
     flex-direction: column;
-    width: 300px;
+    width: 350px;
     background: linear-gradient(135deg, rgb(230,230,255), rgb(190,190,220));
     border-radius: 20px;
     padding: 20px 0;
 }
 
 h1 {
+    font-size: 40px;
     text-align: center;
 }
 
