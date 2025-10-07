@@ -5,8 +5,8 @@ import { weather_conditions } from './weather_conditions';
 import './WeatherDisplay.css'
 
 export type WebAPIParams = {
-  latitude: number | undefined,
-  longitude: number | undefined,
+  latitude: number;
+  longitude: number;
   daily: Array<string>,
   current: Array<string>,
 }
@@ -38,30 +38,64 @@ function getOpenMetroAPI(params: WebAPIParams): string {
 export function WeatherDisplay({prefecture}: {prefecture:string}) {
   const [weather, setWeather] = useState<WeatherInfo>(initial_weather_info);
 
+  async function fetchData(params: WebAPIParams, signal?: AbortSignal):Promise<WeatherInfo | undefined> {
+    const url = getOpenMetroAPI(params);
+
+    try {
+      // APIからデータを取得
+      const res = await fetch(url, {signal});
+      if (!res.ok) {
+        throw new Error("HTTP Error");
+      }
+
+      const data = await res.json();
+      const today = new Date().toISOString().split("T")[0];
+      const idx = data.daily.time.indexOf(today);
+
+      return {
+        weather_code: data.current.weather_code,
+        temperature: data.current.temperature_2m,
+        today_temperature_max: data.daily.temperature_2m_max[idx],
+        today_temperature_min: data.daily.temperature_2m_min[idx],
+      };
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        console.log("Rquest was suspended.");
+      } else {
+        console.error(`Error:`, err);
+      }
+    }
+  }
+
   useEffect(()=>{
+    const controller = new AbortController(); // prefectureが連続して変更された時のキャンセル処理用
+
     const pinfo: Prefecture | undefined = getPrefectureData(prefecture);
+
+    if (!pinfo) {
+      console.error("no prefecture data:" + prefecture);
+      return;
+    }
     const params: WebAPIParams = {
-        latitude: pinfo?.lat,
-        longitude: pinfo?.lon,
+        latitude: pinfo.lat,
+        longitude: pinfo.lon,
         daily: ["temperature_2m_max", "temperature_2m_min"],
         current: ["weather_code", "temperature_2m"],
     }
+    
+    fetchData(params).then((data) => {
+      if (data) {
+        setWeather(data);
+      }
+    }).catch(err => {
+      if(err.name !== "AbortError") {
+        console.error(err);
+      }
+    });
 
-    const url = getOpenMetroAPI(params);
-
-    // APIからデータを取得
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        const today = new Date().toISOString().split("T")[0];
-        const idx = data.daily.time.indexOf(today);
-        setWeather({
-            weather_code: data.current.weather_code,
-            temperature: data.current.temperature_2m,
-            today_temperature_max: data.daily.temperature_2m_max[idx],
-            today_temperature_min: data.daily.temperature_2m_min[idx],
-        });
-      })
+    return () => {
+      controller.abort(); // 前のリクエストをキャンセルする
+    }
   },[prefecture]);
 
   return (
